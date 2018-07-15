@@ -1,10 +1,10 @@
 # cljs-amfmdemo
 
-FIXME: Write a one-line description of your library/project.
+upcoming (hopefully) demo on am/fm synthesis using `clojurescript`,`reagent`, `reagent-forms` (maybe), and Web Audio API
 
 ## Overview
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+really really under development
 
 ## Setup
 
