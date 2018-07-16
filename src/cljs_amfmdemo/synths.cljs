@@ -5,10 +5,6 @@
   (.log js/console value)
   )
 
-(defn idx-set! [osc value]
-  (.log js/console value)
-  )
-
-(defn freq-set! [osc value]
+(defn slider-set! [osc param-type value]
   (.log js/console value)
   )

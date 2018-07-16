@@ -7,83 +7,82 @@
 (def cnv-prop {:w 500 :h 300})
 (defonce app-state
   (r/atom {:am
-           {:freq 0 :idx 0 :label "AM" :idx-label "index"
-            :freq-lo 0 :freq-hi 1000 :freq-val 0
-            :idx-lo 0 :idx-hi 100 :idx-val 0
-            :freq-label "freq" :on false}
+           {:toggle {:label "AM" :val false}
+            :freq {:lo 0 :hi 1000 :val 0 :step 0.01 :label "freq"}
+            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
+            }
            :fm
-           {:freq 0 :idx 0 :label "FM" :idx-label "index"
-            :freq-lo 0 :freq-hi 1000 :freq-val 0
-            :idx-lo 0 :idx-hi 100 :idx-val 0
-            :freq-label "freq" :on false}
+           {:toggle {:label "FM" :on false}
+            :freq {:lo 0 :hi 1000 :val 0 :step 0.01 :label "freq"}
+            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
+            }
            :carrier
-           {:freq 0 :idx 0 :label "carrier" :idx-label "vol"
-            :freq-lo 30 :freq-hi 10000 :freq-val 300
-            :idx-lo 0 :idx-hi 100 :idx-val 0
-            :freq-label "freq" :on false}
+           {:toggle {:label "carrier" :on false}
+            :freq {:lo 20 :hi 5000 :val 0 :step 0.01 :label "freq"}
+            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "vol"}
+            }
            }))
                         
+
+
 
 (defn provide-canvas []
   [:canvas {:id "cnv" :width (:w cnv-prop) :height (:h cnv-prop)}]
   )
 
 
-(defn osc-idx-slider [osc]
+(defn osc-slider [osc param-type]
   ;(.log js/console "idx")
-  (let [entry (get @app-state osc)
-        cur-lo (:idx-lo entry)
-        cur-hi (:idx-hi entry)
-        cur-val (:idx-val entry)
-        label (:idx-label entry)
+  (let [entry (get-in @app-state [osc param-type])
+        cur-lo (:lo entry)
+        cur-hi (:hi entry)
+        cur-val (:val entry)
+        label (:label entry)
+        step (:step entry)
         ]
       {:type "range"
        :min cur-lo
        :max cur-hi
-       :value cur-val
-       :on-change #(s/idx-set! osc (-> % .-target .-value))
+       :default-value cur-val
+       :on-change #(let [tval (-> % .-target .-value)]
+                     (s/slider-set! osc param-type tval)
+                     (reset! app-state (assoc-in @app-state [osc param-type :val] tval)))
+       :key label
+       :step step
               }
 
-    ))
-
-(defn osc-freq-slider [osc]
-  ;(.log js/console "freq")
-  (let [entry (get @app-state osc)
-        cur-lo (:freq-lo entry)
-        cur-hi (:freq-hi entry)
-        cur-val (:freq-val entry)
-        label (:freq-label entry)]
-    {:type "range"
-     :min cur-lo
-     :max cur-hi
-     :value cur-val
-     :on-change #(s/freq-set! osc (-> % .-target .-value))
-              }
     ))
         
-
-
 (defn osc-toggle [osc]
   ;(.log js/console "tgl")
-  (let [entry (get @app-state osc)
+  (let [entry (get-in @app-state [osc :toggle])
         label (:label entry)
-        cur-val (:on entry)]
+        cur-val (:val entry)]
     {:type "checkbox"
-     :value cur-val
-     :on-change #(s/toggler osc (-> % .-target .-value))
+     :default-checked cur-val
+     :on-change #(let [tval (-> % .-target .-checked)]
+                     (s/toggler osc tval)
+                     (reset! app-state (assoc-in @app-state [osc :toggle :val] tval)))
+     :key label
      }
     ))
 
 
 (defn provide-sections []
- (doall (for [osc (keys @app-state)]
+ (doall (for [osc (keys @app-state)
+          :let [labelfn
+                #(let [cur-label (get-in @app-state [osc % :label])]
+                   (if (= % :toggle)
+                     cur-label
+                     (str cur-label ": " (get-in @app-state [osc % :val]))))
+                  ]]
 
     [:div {:class "osc-section" :key (name osc)}
-     [:label [:input (osc-toggle osc)] (get-in @app-state [osc :label])]
+     [:label [:input (osc-toggle osc)] (labelfn :toggle)]
      [:br]
-     [:label [:input (osc-freq-slider osc)] (get-in @app-state [osc :freq-label])]
+     [:label [:input (osc-slider osc :freq)] (labelfn :freq)]
      [:br]
-     [:label [:input (osc-idx-slider osc)] (get-in @app-state [osc :idx-label])]
+     [:label [:input (osc-slider osc :idx)] (labelfn :idx)]
      ]  
     ))
   )
