@@ -64,3 +64,9 @@
     (.stroke cnv-ctx)
     )
   )
+
+(defn init-fft [ctx cnv fft-size]
+  (set-canvas cnv)
+  (create-analyzer ctx fft-size)
+  (draw)
+  )
