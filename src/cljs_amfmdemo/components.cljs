@@ -8,7 +8,12 @@
 (def win js/window)
 
 (defonce osc-state
-  (r/atom {:rm
+  (r/atom { :carrier
+           {:toggle {:label "carrier" :on false}
+            :freq {:lo 20 :hi 5000 :val 0 :step 0.01 :label "freq"}
+            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "vol"}
+            }
+           :rm
            {:toggle {:label "RM" :val false}
             :freq {:lo 0 :hi 1000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
@@ -22,11 +27,6 @@
            {:toggle {:label "FM" :on false}
             :freq {:lo 0 :hi 1000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
-            }
-           :carrier
-           {:toggle {:label "carrier" :on false}
-            :freq {:lo 20 :hi 5000 :val 0 :step 0.01 :label "freq"}
-            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "vol"}
             }
            }))
                         
@@ -42,17 +42,29 @@
 
 (defn provide-description []
   [:ul
-   [:li "Amplitude Modulation (and its cousin Ring Modulation) and Frequency Modulation describe using signals to change (or modulate) of the named parameters of a given signal (known as the carrier). In this demo we are concerned with modulating the carrier's amplitude (in both AM and RM) and frequency (in FM"]
+   [:li "Amplitude modulation (and its cousin ring modulation) and Frequency Modulation describe using signals to change (or modulate) of the named parameters of a given signal (known as the carrier). In this demo we are concerned with modulating the carrier's amplitude (in both AM and RM) and frequency (in FM"]
    [:li "AM/RM and FM introduce into the carrier signal additional frequency components called " [:strong " sidebands"] "."]
    [:li "The amplitude of the modulating signal (and thus how much it affects the carrier signal) is called the " [:strong  "index"] "."]
-   [:li "To get started, click the checkbox for the carrier signal, which activates a sine wave"]
+   [:li [:strong "To get started"] ", click the checkbox for the carrier signal, which activates a sine wave"]
    ]
+  )
+
+(defn describe-carrier []
+  (when (true? (get-in @osc-state[:carrier :toggle :val]))
+    [:ul
+     [:li "Every signal that is " [:strong "periodic"] " (is repeating and in terms of sound, has pitch) can be deconstructed into distinct frequency components using the Fourier theorem"]
+     [:li "From this frequency component, " [:strong "sinusoidal (sine, cosine)"] " waves are considered to be the most elemental signals, consisting of one frequency component at its fundamental frequency (a periodic signal's lowest rate of repetition"]
+     [:li "Thus, periodic signals can be seen as built up of sine waves"]
+     [:li "Less smoothly oscillating signals (such as square waves and sawtooth waves) have several frequency components"]
+     [:li "More regular a signal's repetitions results in the additional frequency components adhering closer to integer multiple relationships with a signal's fundamental frequency (components oscillating at two times a signal's fundamental, three times, four times, five times...)"]
+     ]
+    )
   )
 
 (defn describe-rm []
   (when (true? (get-in @osc-state[:rm :toggle :val]))
     [:ul
-     [:li "In ring modulation, the modulation signal is multiplied with the carrier signal"]
+     [:li "In " [:strong "ring modulation"] ", the modulation signal is multiplied with the carrier signal"]
      [:li "At a fast enough rate (above the threshold of hearing at 20 Hz),this results in sidebands"]
      [:li "For every frequency component Fc in the carrier and every frequency component in the modulator Fm, we produce the sidebands at frequencies Fc-Fm and Fc + Fm."]
      [:li "Here the original frequency components Fc of the carrier are "
@@ -65,7 +77,7 @@
 (defn describe-am []
   (when (true? (get-in @osc-state[:am :toggle :val]))
     [:ul
-     [:li "Amplitude modulation is very similar to ring modulation in where the modulation signal is multiplied with the carrier signal"]
+     [:li [:strong "Amplitude modulation"] " is very similar to ring modulation in where the modulation signal is multiplied with the carrier signal"]
      [:li "In this case, the modulation signal is "
       [:strong  "unipolar"]
       " (either all positive magnitude or all negative magnitude)"]
@@ -80,7 +92,7 @@
   (when (true? (get-in @osc-state[:fm :toggle :val]))
 
     [:ul
-     [:li "In Frequency Modulation, the modulation signal modulates the carrier's frequency (often in the form carrier freq + (mod freq * mod index))"]
+     [:li "In " [:strong "frequency modulation"] ", the modulation signal modulates the carrier's frequency (often in the form carrier freq + (mod freq * mod index))"]
      [:li "For every frequency component Fc in the carrier signal  and every frequency component Fm in the modulator signal, FM produces sideband frequency components Fc + k*Fm where k is an integer (can be zero and negative"]
      [:li "In this case, the original frequency components of the carrier are "
       [:strong  "present"] "."]
@@ -162,10 +174,9 @@
    (provide-sections)
    (provide-canvas)
   [:div
+   (describe-carrier)
    (describe-rm)
-   [:br]
    (describe-am)
-   [:br]
    (describe-fm)
    ]
   ]
