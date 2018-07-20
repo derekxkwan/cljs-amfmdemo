@@ -9,7 +9,7 @@
 
 (defonce osc-state
   (r/atom { :carrier
-           {:toggle {:label "carrier" :on false}
+           {:toggle {:label "carrier" :val false}
             :freq {:lo 20 :hi 5000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "vol"}
             }
@@ -51,7 +51,7 @@
 
 (defn describe-carrier []
   (when (true? (get-in @osc-state[:carrier :toggle :val]))
-    [:ul
+    [:ul {:class "carrier notediv"}
      [:li "Every signal that is " [:strong "periodic"] " (is repeating and in terms of sound, has pitch) can be deconstructed into distinct frequency components using the Fourier theorem"]
      [:li "From this frequency component, " [:strong "sinusoidal (sine, cosine)"] " waves are considered to be the most elemental signals, consisting of one frequency component at its fundamental frequency (a periodic signal's lowest rate of repetition"]
      [:li "Thus, periodic signals can be seen as built up of sine waves"]
@@ -63,7 +63,7 @@
 
 (defn describe-rm []
   (when (true? (get-in @osc-state[:rm :toggle :val]))
-    [:ul
+    [:ul {:class "rm notediv"}
      [:li "In " [:strong "ring modulation"] ", the modulation signal is multiplied with the carrier signal"]
      [:li "At a fast enough rate (above the threshold of hearing at 20 Hz),this results in sidebands"]
      [:li "For every frequency component Fc in the carrier and every frequency component in the modulator Fm, we produce the sidebands at frequencies Fc-Fm and Fc + Fm."]
@@ -76,7 +76,7 @@
 
 (defn describe-am []
   (when (true? (get-in @osc-state[:am :toggle :val]))
-    [:ul
+    [:ul {:class "am notediv"}
      [:li [:strong "Amplitude modulation"] " is very similar to ring modulation in where the modulation signal is multiplied with the carrier signal"]
      [:li "In this case, the modulation signal is "
       [:strong  "unipolar"]
@@ -91,7 +91,7 @@
 (defn describe-fm []
   (when (true? (get-in @osc-state[:fm :toggle :val]))
 
-    [:ul
+    [:ul {:class "fm notediv"}
      [:li "In " [:strong "frequency modulation"] ", the modulation signal modulates the carrier's frequency (often in the form carrier freq + (mod freq * mod index))"]
      [:li "For every frequency component Fc in the carrier signal  and every frequency component Fm in the modulator signal, FM produces sideband frequency components Fc + k*Fm where k is an integer (can be zero and negative"]
      [:li "In this case, the original frequency components of the carrier are "
@@ -102,7 +102,7 @@
   )
 
 (defn provide-canvas []
-  [:canvas {:id "cnv" :width (:w cnv-prop) :height (:h cnv-prop)}]
+  [:canvas {:id "cnv" :style {:width "100%" :height "100%"}}]
   )
 
 
@@ -135,9 +135,12 @@
         cur-val (:val entry)]
     {:type "checkbox"
      :default-checked cur-val
-     :on-change #(let [tval (-> % .-target .-checked)]
-                     ;;(check-audio)
-                     (s/toggler osc tval)
+     :on-change #(let [tval (-> % .-target .-checked)
+                       tfreq (get-in @osc-state [osc :freq :val])
+                       tidx (get-in @osc-state [osc :idx :val])
+                       ]
+                     (check-audio)
+                     (s/toggler osc tval tfreq tidx)
                      (reset! osc-state (assoc-in @osc-state [osc :toggle :val] tval)))
      :key label
      }
@@ -149,11 +152,10 @@
           :let [labelfn
                 #(let [cur-label (get-in @osc-state [osc % :label])]
                    (if (= % :toggle)
-                     cur-label
+                     cur-label                     
                      (str cur-label ": " (get-in @osc-state [osc % :val]))))
                   ]]
-
-    [:div {:class "osc-section" :key (name osc)}
+    [:div {:key (name osc) :class (name osc)}
      [:label [:input (osc-toggle osc)] (labelfn :toggle)]
      [:br]
      [:label [:input (osc-slider osc :freq)] (labelfn :freq)]
@@ -167,13 +169,21 @@
 
 (defn page []
  [:div
-  [:div
+  [:div {:align "center" :id "header"}
    (provide-header)
+   ]
+  [:div {:align "left" :id "descrip"}
    (provide-description)
    ]
-   (provide-sections)
-   (provide-canvas)
-  [:div
+  [:div {:style {:width "100%"  :display "flex"}}
+   [:div {:style {:width "50%" :id "ctrl-panel"}}
+    (provide-sections)
+    ]
+   [:div { :id "canvas-panel" :class "nonheader"}
+    (provide-canvas)
+    ]
+   ]
+  [:div {:id "notes"}
    (describe-carrier)
    (describe-rm)
    (describe-am)

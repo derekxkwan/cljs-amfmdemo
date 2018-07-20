@@ -1,2 +1,49 @@
 /* some style */
 
+html, body{
+    font-family:"Helvetica", sans-serif;
+    background-color: black;
+    color:lightgreen;
+
+    }
+
+#header{
+    color:#ffb349;
+    margin: 0px 0px 0px 0px;
+    }
+
+#descrip{
+    color:#fcea64;
+    margin: 0px 0px 0px 0px;
+    }
+
+.nonheader{
+    color:#d8f0ff;
+    }
+
+.carrier{
+    color:#f2ffba;
+    }
+
+.rm{
+    color:#f5c7f9;
+    }
+
+.am{
+    color:#d2baff;
+    }
+
+.fm{
+    color:#bacaff;
+    }
+
+.notediv{
+    margin-top:0px;
+    margin-bottom:0px;
+    margin-left:0px;
+    margin-right:0px;
+    }
+
+#canvas-panel{
+    flex-grow: 1;
+    }

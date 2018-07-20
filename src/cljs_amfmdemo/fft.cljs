@@ -22,9 +22,15 @@
         cnv-ctx (.getContext canvas "2d")]
   (.clearRect. cnv-ctx 0 0 w h)))
 
+
+
 (defn handle-stream [context stream]
   (let [ipt (.createMediaStreamSource context stream)]
     (.connect ipt analyzer))
+  )
+
+(defn connect-analyzer [to-analyze]
+  (.connect to-analyze analyzer)
   )
 
 (defn handle-error [error]
@@ -37,7 +43,7 @@
       (.catch #(handle-error %))))
   
 
-(defn draw [& {:keys [bg stroke-color] :or {bg "rgb(0,0,0)" stroke-color "rgb(125,75,125)"}}]
+(defn draw [& {:keys [bg stroke-color] :or {bg "rgb(0,0,0)" stroke-color "rgb(0,255,0)"}}]
   (let [w (.-width canvas)
         h (.-height canvas)
         cnv-ctx (.getContext canvas "2d")
@@ -65,8 +71,9 @@
     )
   )
 
-(defn init-fft [ctx cnv fft-size]
+(defn init-fft [ctx cnv fft-size to-analyze]
   (set-canvas cnv)
   (create-analyzer ctx fft-size)
+  (connect-analyzer to-analyze)
   (draw)
   )
