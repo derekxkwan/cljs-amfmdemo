@@ -1,11 +1,15 @@
 # cljs-amfmdemo
 
-- working demo on am/fm synthesis using `clojurescript`,`reagent`, and Web Audio API
+- working, interactive demo on ring modulation, amplitude modulation, and frequency modulation synthesis using `clojurescript`,`reagent`, and `Web Audio API`
 - compiled version is found in the `docs/` folder (or [https://derekxkwan.github.io/cljs-amfmdemo/](https://derekxkwan.github.io/cljs-amfmdemo/))
 
 ## Progress
 
 - working demo
+
+## To Do
+
+- allow selection of different types of oscillators for carrier / ring modulator / amplitude modulator / frequency modulator
 
 ## Setup
 
