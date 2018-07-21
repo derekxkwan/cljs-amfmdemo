@@ -10,22 +10,22 @@
 (defonce osc-state
   (r/atom { :carrier
            {:toggle {:label "carrier" :val false}
-            :freq {:lo 20 :hi 5000 :val 0 :step 0.01 :label "freq"}
+            :freq {:lo 30 :hi 10000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "vol"}
             }
-           :rm
+           :rmod
            {:toggle {:label "RM" :val false}
-            :freq {:lo 0 :hi 1000 :val 0 :step 0.01 :label "freq"}
+            :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
             }
-           :am
+           :amod
            {:toggle {:label "AM" :val false}
-            :freq {:lo 0 :hi 1000 :val 0 :step 0.01 :label "freq"}
+            :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
             }
-           :fm
+           :fmod
            {:toggle {:label "FM" :on false}
-            :freq {:lo 0 :hi 1000 :val 0 :step 0.01 :label "freq"}
+            :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
             }
            }))
@@ -62,7 +62,7 @@
   )
 
 (defn describe-rm []
-  (when (true? (get-in @osc-state[:rm :toggle :val]))
+  (when (true? (get-in @osc-state[:rmod :toggle :val]))
     [:ul {:class "rm notediv"}
      [:li "In " [:strong "ring modulation"] ", the modulation signal is multiplied with the carrier signal"]
      [:li "At a fast enough rate (above the threshold of hearing at 20 Hz),this results in sidebands"]
@@ -75,7 +75,7 @@
   )
 
 (defn describe-am []
-  (when (true? (get-in @osc-state[:am :toggle :val]))
+  (when (true? (get-in @osc-state[:amod :toggle :val]))
     [:ul {:class "am notediv"}
      [:li [:strong "Amplitude modulation"] " is very similar to ring modulation in where the modulation signal is multiplied with the carrier signal"]
      [:li "In this case, the modulation signal is "
@@ -89,7 +89,7 @@
   )
 
 (defn describe-fm []
-  (when (true? (get-in @osc-state[:fm :toggle :val]))
+  (when (true? (get-in @osc-state[:fmod :toggle :val]))
 
     [:ul {:class "fm notediv"}
      [:li "In " [:strong "frequency modulation"] ", the modulation signal modulates the carrier's frequency (often in the form carrier freq + (mod freq * mod index))"]
@@ -119,8 +119,9 @@
        :min cur-lo
        :max cur-hi
        :default-value cur-val
-       :on-change #(let [tval (-> % .-target .-value)]
-                     (s/slider-set! osc param-type tval)
+       :on-change #(let [tval (-> % .-target .-value)
+                         on? (get-in @osc-state [osc :toggle :val])]
+                     (s/slider-set! osc param-type tval on?)
                      (reset! osc-state (assoc-in @osc-state [osc param-type :val] tval)))
        :key label
        :step step

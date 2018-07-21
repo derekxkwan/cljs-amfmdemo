@@ -2,9 +2,13 @@
 
 upcoming (hopefully) demo on am/fm synthesis using `clojurescript`,`reagent`, `reagent-forms` (maybe), and Web Audio API
 
-## Overview
+## Progress
 
-really really under development
+really really under development BUT
+- have implemented carrier oscillator and ring modulation (plus visualization using analyzer)
+
+## Issues
+- ring modulator seems to be unipolar (no negative values?) there shouldn't be the original frequency there...
 
 ## Setup
 
