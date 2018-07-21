@@ -45,7 +45,7 @@
                ;; lein cljsbuild once min
                {:id "min"
                 :source-paths ["src"]
-                :compiler {:output-to "resources/public/js/compiled/cljs_amfmdemo.js"
+                :compiler {:output-to "docs/js/cljs_amfmdemo.js"
                            :main cljs-amfmdemo.core
                            :optimizations :advanced
                            :pretty-print false}}]}

@@ -65,7 +65,7 @@
                  (.moveTo cnv-ctx x y)
                  (.lineTo cnv-ctx x y))
                ))
-      (.lineTo cnv-ctx w (/ h 2))
+      (.lineTo cnv-ctx w h)
       )
     (.stroke cnv-ctx)
     )

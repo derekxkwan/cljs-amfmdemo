@@ -3,30 +3,29 @@
             [cljs-amfmdemo.synths :as s]
             ))
 
-(def cnv-prop {:w 500 :h 300})
 (def audio-on? (r/atom false))
 (def win js/window)
 
 (defonce osc-state
   (r/atom { :carrier
-           {:toggle {:label "carrier" :val false}
+           {:toggle {:label "carrier signal" :val false}
             :freq {:lo 30 :hi 10000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "vol"}
             }
            :rmod
-           {:toggle {:label "RM" :val false}
+           {:toggle {:label "ring modulation" :val false}
             :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
-            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
+            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "index"}
             }
            :amod
-           {:toggle {:label "AM" :val false}
+           {:toggle {:label "amplitude modulation" :val false}
             :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
-            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
+            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "index"}
             }
            :fmod
-           {:toggle {:label "FM" :on false}
+           {:toggle {:label "frequency modulation" :on false}
             :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
-            :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "idx"}
+            :idx {:lo 0 :hi 100000 :val 0 :step 0.01 :label "index"}
             }
            }))
                         
@@ -37,14 +36,16 @@
         (reset! audio-on? true))))
 
 (defn provide-header []
-  [:h1 "interactive am/fm demo"]
+  [:div {:align "center" :id "header"}
+   [:h1 "interactive am/fm demo (by derek kwan)"]
+   ]
   )
 
 (defn provide-description []
   [:ul
    [:li "Amplitude modulation (and its cousin ring modulation) and Frequency Modulation describe using signals to change (or modulate) of the named parameters of a given signal (known as the carrier). In this demo we are concerned with modulating the carrier's amplitude (in both AM and RM) and frequency (in FM"]
    [:li "AM/RM and FM introduce into the carrier signal additional frequency components called " [:strong " sidebands"] "."]
-   [:li "The amplitude of the modulating signal (and thus how much it affects the carrier signal) is called the " [:strong  "index"] "."]
+   [:li "The amplitude of the modulating signal (and thus how much it affects the carrier signal) is called the " [:strong  "index"] " (here scaled by 100)."]
    [:li [:strong "To get started"] ", click the checkbox for the carrier signal, which activates a sine wave"]
    ]
   )
@@ -63,7 +64,7 @@
 
 (defn describe-rm []
   (when (true? (get-in @osc-state[:rmod :toggle :val]))
-    [:ul {:class "rm notediv"}
+    [:ul {:class "rmod notediv"}
      [:li "In " [:strong "ring modulation"] ", the modulation signal is multiplied with the carrier signal"]
      [:li "At a fast enough rate (above the threshold of hearing at 20 Hz),this results in sidebands"]
      [:li "For every frequency component Fc in the carrier and every frequency component in the modulator Fm, we produce the sidebands at frequencies Fc-Fm and Fc + Fm."]
@@ -76,7 +77,7 @@
 
 (defn describe-am []
   (when (true? (get-in @osc-state[:amod :toggle :val]))
-    [:ul {:class "am notediv"}
+    [:ul {:class "amod notediv"}
      [:li [:strong "Amplitude modulation"] " is very similar to ring modulation in where the modulation signal is multiplied with the carrier signal"]
      [:li "In this case, the modulation signal is "
       [:strong  "unipolar"]
@@ -91,7 +92,7 @@
 (defn describe-fm []
   (when (true? (get-in @osc-state[:fmod :toggle :val]))
 
-    [:ul {:class "fm notediv"}
+    [:ul {:class "fmod notediv"}
      [:li "In " [:strong "frequency modulation"] ", the modulation signal modulates the carrier's frequency (often in the form carrier freq + (mod freq * mod index))"]
      [:li "For every frequency component Fc in the carrier signal  and every frequency component Fm in the modulator signal, FM produces sideband frequency components Fc + k*Fm where k is an integer (can be zero and negative"]
      [:li "In this case, the original frequency components of the carrier are "
@@ -102,12 +103,11 @@
   )
 
 (defn provide-canvas []
-  [:canvas {:id "cnv" :style {:width "100%" :height "100%"}}]
+  [:canvas {:id "cnv" :style {:width "90%" :height "90%"}}]
   )
 
 
 (defn osc-slider [osc param-type]
-  ;(.log js/console "idx")
   (let [entry (get-in @osc-state [osc param-type])
         cur-lo (:lo entry)
         cur-hi (:hi entry)
@@ -170,21 +170,20 @@
 
 (defn page []
  [:div
-  [:div {:align "center" :id "header"}
    (provide-header)
-   ]
   [:div {:align "left" :id "descrip"}
    (provide-description)
    ]
-  [:div {:style {:width "100%"  :display "flex"}}
+  [:div {:style {:width "90%"  :display "flex"}}
    [:div {:style {:width "50%" :id "ctrl-panel"}}
     (provide-sections)
     ]
-   [:div { :id "canvas-panel" :class "nonheader"}
+   [:div { :id "canvas-panel" :align "center"}
+    "Frequency Analysis"
     (provide-canvas)
     ]
    ]
-  [:div {:id "notes"}
+  [:div {:id "notes" :width "90%"}
    (describe-carrier)
    (describe-rm)
    (describe-am)

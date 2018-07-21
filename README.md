@@ -1,14 +1,11 @@
 # cljs-amfmdemo
 
-upcoming (hopefully) demo on am/fm synthesis using `clojurescript`,`reagent`, `reagent-forms` (maybe), and Web Audio API
+- working demo on am/fm synthesis using `clojurescript`,`reagent`, and Web Audio API
+- compiled version is found in the `docs/` folder
 
 ## Progress
 
-really really under development BUT
-- have implemented carrier oscillator and ring modulation (plus visualization using analyzer)
-
-## Issues
-- ring modulator seems to be unipolar (no negative values?) there shouldn't be the original frequency there...
+- working demo
 
 ## Setup
 
@@ -37,7 +34,5 @@ And open your browser in `resources/public/index.html`. You will not
 get live reloading, nor a REPL. 
 
 ## License
-
-Copyright © 2014 FIXME
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.

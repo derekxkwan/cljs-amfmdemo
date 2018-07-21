@@ -11,7 +11,7 @@
 
 
 (defn set-gain-at-time [cur-node cur-value cur-time]
-  (.setValueAtTime (-> cur-node .-gain) (Math/min (/ cur-value 100) 1) cur-time)
+  (.setValueAtTime (-> cur-node .-gain) (/ cur-value 100) cur-time)
   )
 
 (defn set-freq-at-time [cur-node cur-freq cur-time]
@@ -67,17 +67,49 @@
     (if (true? connect?)
       (do (.connect rmod-gain (.-gain carrier-rmod))
           (set-freq-at-time rmod-osc freq cur-time)
-          (set-gain-at-time rmod-gain idx cur-time))
+          (set-gain-at-time rmod-gain idx cur-time)
+          (set-gain-at-time carrier-rmod 0 cur-time) ;; hooking this up SUMS with the currently set value so we want to set to 0 
+          )
       (do (.disconnect rmod-gain (.-gain carrier-rmod))
           (set-gain-at-time carrier-rmod 100 cur-time))
       )
     ))
 
+(defn amod-connect [connect? freq idx]
+  (let [amod-gain (get-in oscs [:amod :gain])
+        amod-osc (get-in oscs [:amod :osc])
+        carrier-amod (get-in oscs [:carrier :gain-amod])
+        cur-time (get-current-time)]
+    (set-gain-at-time carrier-amod 100 cur-time)
+    (if (true? connect?)
+      (do (.connect amod-gain (.-gain carrier-amod))
+          (set-freq-at-time amod-osc freq cur-time)
+          (set-gain-at-time amod-gain idx cur-time))
+      (.disconnect amod-gain (.-gain carrier-amod))
+      )
+    ))
+
+(defn fmod-connect [connect? freq idx]
+  (let [fmod-gain (get-in oscs [:fmod :gain])
+        fmod-osc (get-in oscs [:fmod :osc])
+        carrier-osc(get-in oscs [:carrier :osc])
+        cur-time (get-current-time)]
+    (if (true? connect?)
+      (do (.connect fmod-gain (.-frequency carrier-osc))
+          (set-freq-at-time fmod-osc freq cur-time)
+          (set-gain-at-time fmod-gain idx cur-time))
+      (.disconnect fmod-gain (.-frequency carrier-osc))
+      )
+    ))
+
+;; resolve doesn't exist in cljs =(
 (defn osc-connect [osc connect? freq idx]
-  (let [osc-symbol (symbol (name osc))]
-    (cond (= 'carrier osc-symbol) (carrier-connect)
-          (= 'rmod osc-symbol) (rmod-connect connect? freq idx)
-          :else nil)
+  (let [osc-string (name osc)]
+    (cond (= "carrier" osc-string) (carrier-connect)
+          (= "fmod" osc-string) (fmod-connect connect? freq idx)
+          (= "amod" osc-string) (amod-connect connect? freq idx)
+          :else (rmod-connect connect? freq idx)
+        )
     ))
 
 (defn toggler [want-osc value freq idx]
