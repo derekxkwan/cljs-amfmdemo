@@ -1,7 +1,7 @@
 # cljs-amfmdemo
 
 - working demo on am/fm synthesis using `clojurescript`,`reagent`, and Web Audio API
-- compiled version is found in the `docs/` folder
+- compiled version is found in the `docs/` folder (or [https://derekxkwan.github.io/cljs-amfmdemo/](https://derekxkwan.github.io/cljs-amfmdemo/))
 
 ## Progress
 
@@ -35,4 +35,4 @@ get live reloading, nor a REPL.
 
 ## License
 
-Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
+gpl v. 3

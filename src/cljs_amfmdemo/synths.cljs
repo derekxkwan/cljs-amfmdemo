@@ -142,7 +142,7 @@
   (set! ctx (if (.-AudioContext win) (win.AudioContext.) (win.webkitAudioContext.)))
   (doall (map osc-create (keys oscs)))
   (osc-connect :carrier true nil nil)
-  (println oscs)
+  ;;(println oscs)
   (fft/init-fft ctx cnv fft-size (get-in oscs [:carrier :gain]))
   )
   

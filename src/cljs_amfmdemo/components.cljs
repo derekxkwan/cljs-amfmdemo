@@ -38,6 +38,7 @@
 (defn provide-header []
   [:div {:align "center" :id "header"}
    [:h1 "interactive am/fm demo (by derek kwan)"]
+   [:a {:href "https://gitlab.com/derekxkwan/cljs-amfmdemo"} "(source)"]
    ]
   )
 
@@ -121,8 +122,9 @@
        :default-value cur-val
        :on-change #(let [tval (-> % .-target .-value)
                          on? (get-in @osc-state [osc :toggle :val])]
-                     (s/slider-set! osc param-type tval on?)
-                     (reset! osc-state (assoc-in @osc-state [osc param-type :val] tval)))
+                     (when (true? @audio-on?) (s/slider-set! osc param-type tval on?))
+                     (reset! osc-state (assoc-in @osc-state [osc param-type :val] tval))
+                     )
        :key label
        :step step
               }
