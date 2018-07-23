@@ -5,7 +5,7 @@
 
 ## Progress
 
-- working demo
+- working demo (6-22-2018: now with different oscillator types!)
 
 ## To Do
 

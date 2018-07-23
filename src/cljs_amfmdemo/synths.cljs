@@ -4,10 +4,10 @@
 (def fft-size 1024)
 (def ctx nil)
 
-(def oscs {:carrier {:osc nil :gain-rmod nil :gain-amod nil :gain nil}
-           :rmod  {:osc nil :gain nil}
-           :amod  {:osc nil :gain nil}
-           :fmod  {:osc nil :gain nil}})
+(def oscs {:carrier {:osc nil :gain-rmod nil :gain-amod nil :gain nil :type "sine"}
+           :rmod  {:osc nil :gain nil :type "sine"}
+           :amod  {:osc nil :gain nil :type "sine"}
+           :fmod  {:osc nil :gain nil :type "sine"}})
 
 
 (defn set-gain-at-time [cur-node cur-value cur-time]
@@ -40,8 +40,16 @@
         )
       )
     ))
-   
 
+
+
+(defn osc-type-set [want-osc osc-type]
+  (let [cur-osc (get-in oscs [want-osc :osc])
+        cur-type (get-in oscs [want-osc :type])]
+    (set! oscs (assoc-in oscs [want-osc :type] osc-type))
+    (when (and (not (nil? cur-osc)) (not= osc-type cur-type))
+      (set! (.-type cur-osc) osc-type))
+    ))  
 
 (defn carrier-connect []
   (let [carrier (get oscs :carrier)
@@ -112,7 +120,7 @@
         )
     ))
 
-(defn toggler [want-osc value freq idx]
+(defn toggler [want-osc value freq idx osc-type]
   (let [osc (get oscs want-osc) 
         cur-osc (get osc :osc)
         cur-gain (get osc :gain)
@@ -120,6 +128,7 @@
     (if (true? value)
       (do (set-gain-at-time cur-gain idx cur-time)
           (set-freq-at-time cur-osc freq cur-time)
+          (osc-type-set want-osc osc-type)
           )
       (set-gain-at-time cur-gain 0 cur-time)
       )

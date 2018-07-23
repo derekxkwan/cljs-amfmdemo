@@ -6,26 +6,32 @@
 (def audio-on? (r/atom false))
 (def win js/window)
 
+(def osc-types ["sine" "square" "sawtooth" "triangle"])
+
 (defonce osc-state
   (r/atom { :carrier
            {:toggle {:label "carrier signal" :val false}
             :freq {:lo 30 :hi 10000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "vol"}
+            :type "sine"
             }
            :rmod
            {:toggle {:label "ring modulation" :val false}
             :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "index"}
+            :type "sine"
             }
            :amod
            {:toggle {:label "amplitude modulation" :val false}
             :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100 :val 0 :step 0.01 :label "index"}
+            :type "sine"
             }
            :fmod
            {:toggle {:label "frequency modulation" :on false}
             :freq {:lo 0 :hi 5000 :val 0 :step 0.01 :label "freq"}
             :idx {:lo 0 :hi 100000 :val 0 :step 0.01 :label "index"}
+            :type "sine"
             }
            }))
                         
@@ -38,7 +44,7 @@
 (defn provide-header []
   [:div {:align "center" :id "header"}
    [:h1 "interactive am/fm demo (by derek kwan)"]
-   [:a {:href "https://gitlab.com/derekxkwan/cljs-amfmdemo"} "(source)"]
+   [:a {:href "https://gitlab.com/derekxkwan/cljs-amfmdemo"} "(source, gpl v3)"]
    ]
   )
 
@@ -47,7 +53,7 @@
    [:li "Amplitude modulation (and its cousin ring modulation) and Frequency Modulation describe using signals to change (or modulate) of the named parameters of a given signal (known as the carrier). In this demo we are concerned with modulating the carrier's amplitude (in both AM and RM) and frequency (in FM"]
    [:li "AM/RM and FM introduce into the carrier signal additional frequency components called " [:strong " sidebands"] "."]
    [:li "The amplitude of the modulating signal (and thus how much it affects the carrier signal) is called the " [:strong  "index"] " (here scaled by 100)."]
-   [:li [:strong "To get started"] ", click the checkbox for the carrier signal, which activates a sine wave"]
+   [:li [:strong "To get started"] ", click the checkbox for the carrier signal, which activates a sine wave oscillator."]
    ]
   )
 
@@ -59,7 +65,8 @@
      [:li "Thus, periodic signals can be seen as built up of sine waves"]
      [:li "Less smoothly oscillating signals (such as square waves and sawtooth waves) have several frequency components"]
      [:li "More regular a signal's repetitions results in the additional frequency components adhering closer to integer multiple relationships with a signal's fundamental frequency (components oscillating at two times a signal's fundamental, three times, four times, five times...)"]
-     ]
+     [:li "Note that when you introduce sidebands via one of the modulation techniques, the components will \"reflect back\" beyond the lower (0 Hz) and upper (half the sampling rate) bounds of the Frequency Analysis window. This is called " [:strong "aliasing"] "."]
+      ]
     )
   )
 
@@ -72,6 +79,7 @@
      [:li "Here the original frequency components Fc of the carrier are "
       [:strong  "missing"]
       "."]
+     [:li "Note that you have to set a non-zero index to produce sound (since RM involves multiplication)."]
      ]
     )
   )
@@ -108,6 +116,24 @@
   )
 
 
+(defn osc-select [osc]
+  [:form {:id (str (name osc) "-radio")
+          :on-change #(let [tval (-> % .-target .-value)]
+                        (swap! osc-state assoc-in [osc :type] tval)
+                        (s/osc-type-set osc tval))
+          }
+   (doall (for [i osc-types
+                :let [cur-id (str (name osc) "-" i)]
+                ]
+            [:label {:key cur-id}
+             [:input {:type "radio" :name (str (name osc) "-radio") :value i :key cur-id :default-checked (= i "sine")}]
+             i ]
+            ))
+   ]
+  )
+           
+
+
 (defn osc-slider [osc param-type]
   (let [entry (get-in @osc-state [osc param-type])
         cur-lo (:lo entry)
@@ -123,7 +149,7 @@
        :on-change #(let [tval (-> % .-target .-value)
                          on? (get-in @osc-state [osc :toggle :val])]
                      (when (true? @audio-on?) (s/slider-set! osc param-type tval on?))
-                     (reset! osc-state (assoc-in @osc-state [osc param-type :val] tval))
+                     (swap! osc-state assoc-in [osc param-type :val] tval)
                      )
        :key label
        :step step
@@ -141,10 +167,11 @@
      :on-change #(let [tval (-> % .-target .-checked)
                        tfreq (get-in @osc-state [osc :freq :val])
                        tidx (get-in @osc-state [osc :idx :val])
+                       ttype (get-in @osc-state [osc :type])
                        ]
                      (check-audio)
-                     (s/toggler osc tval tfreq tidx)
-                     (reset! osc-state (assoc-in @osc-state [osc :toggle :val] tval)))
+                     (s/toggler osc tval tfreq tidx ttype)
+                     (swap! osc-state assoc-in [osc :toggle :val] tval))
      :key label
      }
     ))
@@ -160,6 +187,8 @@
                   ]]
     [:div {:key (name osc) :class (name osc)}
      [:label [:input (osc-toggle osc)] (labelfn :toggle)]
+     [:br]
+     (osc-select osc)
      [:br]
      [:label [:input (osc-slider osc :freq)] (labelfn :freq)]
      [:br]
